@@ -1,22 +1,37 @@
-# Enterprise-level permissions and auditing system
+# BackendSecurityKit 1.0.0
 
-> 文档与示例预览：本仓库本次只公开 README、集成示例、许可证和来源说明。`securitykit` 库源码、CLI、EXE、测试和构建脚本不包含在本次提交中。下文运行命令与示例适用于完整 BackendSecurityKit 工程；仅克隆本仓库不能直接运行服务。
+从 Tencent/WeKnora 的安全设计中抽取思路并独立实现的通用后端安全组件。提供 **Python 库 + WSGI 中间件 + HTTPS/gRPC 示例服务**；不依赖 WeKnora、Go、Docker、数据库服务器或模型。
 
-从 Tencent/WeKnora 的安全设计中抽取思路并独立实现的通用后端安全组件。版本 **1.0.0**。
+本仓库包含 **完整 `securitykit` 源码、CLI、测试、示例和构建脚本**。Windows x64 便携 EXE、`_internal/` 运行时、依赖 wheels、证书、凭据和运行数据库不在此仓库，需按 `build-windows.ps1` 或单独发布的离线包获取。
 
-交付内容是 **Python 库 + WSGI 中间件 + HTTPS/gRPC 示例服务 + Windows x64 便携程序**。不依赖 WeKnora、Go、Docker、数据库服务器或模型。源码要求 Python 3.11+；本次便携包自带 Python 3.12 运行时。
+这是用于学习和集成的参考实现，尚未经过独立安全审计；企业上线前需按自身身份系统、密钥托管、部署和审计留存要求完成集成。源码对应关系与有意改变的行为见 [UPSTREAM.md](UPSTREAM.md)。
 
-这是用于学习和集成的参考实现，尚未经过独立安全审计；企业上线前需按自身身份系统、密钥托管、部署和审计留存要求完成集成。源码对应关系与有意改变的行为见 `UPSTREAM.md`。
+## 快速开始
 
-## 给接收者的最快用法
+需要 Python 3.11+。建议使用虚拟环境：
 
-1. 解压整个压缩包到一个可写目录，保持 `BackendSecurityKit.exe` 与 `_internal/` 在一起。
-2. 双击 **`demo.bat`**。它会临时生成密钥和证书，执行真实 HTTPS 与 gRPC 调用，展示正常读取、越权拒绝、租户隔离和审计校验；结束后删除临时状态。
-3. 双击 **`start.bat`**，首次自动创建 `private-state/`，启动两个只监听本机的双向 TLS 服务。按 Ctrl+C 停止。
+```sh
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Linux/macOS: . .venv/bin/activate
+python -m pip install -r requirements.txt
+python run.py demo
+python -m examples.integration
+python -m unittest discover -s tests -v
+```
 
-不需要安装 Python；不需要网络账号或真实 API Key。本地演示证书与 Token 有效期为 30 天；过期后在新目录重新初始化演示状态。证书仅签发给 localhost、127.0.0.1 和 ::1。
+`demo` 会在临时目录生成一次性密钥和证书，执行真实 HTTPS 与 gRPC 调用，展示正常读取、越权拒绝、租户隔离和审计校验，结束后删除临时状态。它不需要网络账号、真实 API Key 或模型。
 
-**转发给别人时，发送原始发布 ZIP。不要把运行后生成的 `private-state/`、任何 `*-state/`、证书私钥、数据库或客户端配置重新打包。** 每个人首次运行会生成不同的凭据。
+启动本地演示服务：
+
+```sh
+python run.py init --state private-state
+python run.py serve --state private-state
+```
+
+首次初始化后，`private-state/` 含访问令牌、AES/HMAC 密钥、证书私钥、SQLite 数据库和客户端配置。**该目录已被 `.gitignore` 排除，不能提交、转发或重新打包。** 每个人首次运行会生成不同凭据。
+
+Windows 用户也可以使用 `start.bat` / `demo.bat`；它们优先使用同目录的便携 EXE（单独分发），没有 EXE 时回退到 `python run.py`。
 
 ## 四个组成部分
 
@@ -46,30 +61,26 @@
 
 ## 命令行
 
-在解压目录打开终端；源代码用户把下文 `BackendSecurityKit.exe` 换成 `python run.py`。
-
-```powershell
-.\BackendSecurityKit.exe demo
-.\BackendSecurityKit.exe init --state private-state
-.\BackendSecurityKit.exe serve --state private-state
+```sh
+python run.py demo
+python run.py init --state private-state
+python run.py serve --state private-state
 ```
 
-`init` 遇到已存在目录会拒绝覆盖。`start.bat` 已自动执行过 init 时无需重复执行。
+`init` 遇到已存在目录会拒绝覆盖。服务运行后，在另一个终端调用：
 
-服务运行后，在另一个终端调用：
-
-```powershell
+```sh
 # 创建资源；值从文件读取，避免进入终端命令历史
-.\BackendSecurityKit.exe call create --identity writer-a --value-file examples/sample-value.txt
+python run.py call create --identity writer-a --value-file examples/sample-value.txt
 # Viewer 可读取
-.\BackendSecurityKit.exe call read --identity viewer-a
+python run.py call read --identity viewer-a
 # Viewer 写入被拒绝
-.\BackendSecurityKit.exe call update --identity viewer-a --value-file examples/sample-value.txt
+python run.py call update --identity viewer-a --value-file examples/sample-value.txt
 # tenant-b 的 Owner 访问 tenant-a 被拒绝
-.\BackendSecurityKit.exe call read --identity owner-b --tenant tenant-a
+python run.py call read --identity owner-b --tenant tenant-a
 # 使用同一套策略和数据走 gRPC
-.\BackendSecurityKit.exe call read --transport grpc --identity viewer-a
-.\BackendSecurityKit.exe call audit --identity admin-a
+python run.py call read --transport grpc --identity viewer-a
+python run.py call audit --identity admin-a
 ```
 
 客户端调用失败返回非零退出码；CLI 仅输出安全错误类型，不回显远端错误正文。成功的 `read` 命令会按业务要求在终端打印读取值。
@@ -79,13 +90,6 @@
 Token 到期/禁用与角色变化：本地维护 `server.json` 的哈希记录、`expires_at`、`disabled` 和 `memberships`，然后重启服务生效。此版本不含在线吊销缓存同步或证书 CRL/OCSP 管理。
 
 ## 库集成
-
-```sh
-python -m pip install -r requirements.txt
-python run.py demo
-python -m examples.integration
-python -m unittest discover -s tests -v
-```
 
 通用接口位于 `securitykit/core.py`：
 
@@ -122,8 +126,8 @@ gRPC 默认 `localhost:50051`；请求 JSON 字段为 `tenant/action/resource/va
 
 ## 审计校验与边界
 
-```powershell
-.\BackendSecurityKit.exe verify-audit --state private-state
+```sh
+python run.py verify-audit --state private-state
 ```
 
 输出 `{"seq":...,"tag":"..."}`。把输出保存到**独立、受保护的外部位置**作为 checkpoint；后续使用 `--checkpoint checkpoint.json` 检测删除尾部或回滚到早期链。不要只把 checkpoint 与数据库放在同一个攻击者可写目录。
@@ -141,10 +145,27 @@ HMAC 链提供篡改证据，**不是不可篡改存储或数字签名**。没�
 - HMAC 密钥没有在线轮换功能；已有审计链需要原密钥才能验证，长期备份和轮换需规划分段归档和外部锚点。
 - SQLite 文件及 WAL 只保存 secret 密文；字段标识符、拥有者和审计元数据不加密，文件加密不覆盖进程内存、终端输出或客户端磁盘。
 
+## 仓库结构
+
+| 路径 | 内容 |
+|---|---|
+| `securitykit/` | 内核、AES-GCM、RBAC、审计、TLS/gRPC 传输、CLI、PKI |
+| `tests/` | 24 项标准库 unittest：加密、权限、租户隔离、审计、TLS/gRPC |
+| `examples/` | 无凭据的集成示例与示例值 |
+| `run.py` | 源码 CLI 入口 |
+| `requirements.txt` / `pyproject.toml` | 运行与构建依赖配置 |
+| `scripts/build_release.py` | 按白名单装配发布包的工具 |
+| `build-windows.ps1` | Windows 便携包构建（PyInstaller） |
+| `start.bat` / `demo.bat` | 便携包启动与演示入口 |
+| `private-state/` | 运行后生成的凭据与数据库，已被忽略 |
+| `UPSTREAM.md` / `THIRD-PARTY.md` | 上游对应关系与第三方声明 |
+| `TEST-RESULTS.md` / `RELEASE-INFO.json` | 验证记录与 1.0.0 发布元数据 |
+| `CONTRIBUTING.md` / `CHANGELOG.md` | 贡献流程与版本记录 |
+
 ## 部署与测试范围
 
 附带服务面向本机学习和联调，固定 loopback；HTTP 使用标准库参考服务器，最多同时处理 32 个连接，socket 超时 5 秒；gRPC 最多 32 个并发 RPC。它们不替代生产反向代理的限流、完整 HTTP 防护、容量治理或证书管理。
 
-通用内核以 SQLite 单机事务作为示例，没有集群权限缓存、跨进程即时吊销、外部 KMS/HSM、自动凭据轮换、登录防爆破、租户配额或审计保留策略。回调中的网络/邮件等外部副作用无法通过 SQLite 回滚，应使用事务 outbox。已验证范围见 `TEST-RESULTS.md`。
+通用内核以 SQLite 单机事务作为示例，没有集群权限缓存、跨进程即时吊销、外部 KMS/HSM、自动凭据轮换、登录防爆破、租户配额或审计保留策略。回调中的网络/邮件等外部副作用无法通过 SQLite 回滚，应使用事务 outbox。已验证范围见 [TEST-RESULTS.md](TEST-RESULTS.md)。
 
-源码采用 MIT；上游和第三方许可证保留于 `licenses/`。本项目不是腾讯官方发行版。`scripts/build_release.py` 按白名单装配分发文件，不会收集运行后的私有状态。
+源码采用 MIT；上游和第三方许可证见 [LICENSE](LICENSE)、[THIRD-PARTY.md](THIRD-PARTY.md) 与 `licenses/`。本项目不是腾讯官方发行版。

@@ -13,3 +13,11 @@ dist/
 *.exe
 *.log
 *.zip
+*.tar.gz
+releases/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+.DS_Store
+Thumbs.db

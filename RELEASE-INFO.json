@@ -1,0 +1,40 @@
+{
+  "name": "BackendSecurityKit",
+  "version": "1.0.0",
+  "build_date": "2026-10-19",
+  "target": "Windows-x64",
+  "python": "3.12.14",
+  "openssl_python_ssl": "3.5.8",
+  "upstream_commit": "2fbfb4471581cd5e7d731bc7a2d443fe7d8e95b5",
+  "source_tests": {
+    "passed": 24
+  },
+  "portable_demo": {
+    "passed": 4,
+    "uses_real_https_and_grpc_mtls": true
+  },
+  "portable_cli": {
+    "exe_init": "passed",
+    "refuses_reinitialization": "passed",
+    "exe_live_https": "passed",
+    "exe_live_grpc": "passed",
+    "viewer_write_denied": "passed",
+    "cross_tenant_denied": "passed",
+    "cli_audit_checkpoint": "passed",
+    "no_plaintext_secret_or_token_in_audit": "passed",
+    "audit_events": 6
+  },
+  "wheel_sha256": {
+    "cffi-2.1.1-cp312-cp312-win_amd64.whl": "f53e442b08449d42821fa4a4fba000095af9f62742a500f978a9f557ec44339a",
+    "cryptography-48.0.0-cp311-abi3-win_amd64.whl": "5b012212e08b8dd5edc78ef54da83dd9892fd9105323b3993eff6bea65dc21d7",
+    "grpcio-1.84.0-cp312-cp312-win_amd64.whl": "49717e857899f4136d7657bf5aded61ac479110a075438290923a4d86af7cd02",
+    "pycparser-3.11-py3-none-any.whl": "51d5a8ba2be0bbe440b99d2112604c95bbbc3c2748a64260186c541e1729cd80",
+    "typing_extensions-4.16.0-py3-none-any.whl": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+  },
+  "sensitive_runtime_state": "Excluded by whitelist; fresh generation at recipient first run",
+  "privacy_check": {
+    "files_checked": 303,
+    "frozen_code_objects_checked": 11803,
+    "findings": []
+  }
+}

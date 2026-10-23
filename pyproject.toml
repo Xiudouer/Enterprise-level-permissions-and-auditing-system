@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "backend-security-kit"
+version = "1.0.0"
+description = "Tenant RBAC, AES-256-GCM, TLS and transactional audit learning kit"
+requires-python = ">=3.11"
+dependencies = ["cryptography==48.0.0", "grpcio==1.84.0"]
+license = "MIT"
+
+[project.scripts]
+backend-security = "securitykit.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["securitykit*"]
