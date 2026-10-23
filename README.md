@@ -158,6 +158,7 @@ HMAC 链提供篡改证据，**不是不可篡改存储或数字签名**。没�
 | `build-windows.ps1` | Windows 便携包构建（PyInstaller） |
 | `start.bat` / `demo.bat` | 便携包启动与演示入口 |
 | `private-state/` | 运行后生成的凭据与数据库，已被忽略 |
+| `licenses/` | WeKnora 上游许可证 |
 | `UPSTREAM.md` / `THIRD-PARTY.md` | 上游对应关系与第三方声明 |
 | `TEST-RESULTS.md` / `RELEASE-INFO.json` | 验证记录与 1.0.0 发布元数据 |
 | `CONTRIBUTING.md` / `CHANGELOG.md` | 贡献流程与版本记录 |
