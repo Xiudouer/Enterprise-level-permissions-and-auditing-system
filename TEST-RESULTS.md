@@ -27,6 +27,10 @@ grpcio 1.84.0. Unit/integration runner: Python standard-library unittest.
   or DEADLINE_EXCEEDED depending on gRPC connection scheduling; both indicate no
   successful business RPC.
 
+## CI
+
+GitHub Actions `tests` (ubuntu-latest, CPython 3.12) passed all 24 tests on 2026-10-23, including real loopback HTTPS/gRPC mTLS. This covers the source test suite only, not the production deployment boundaries above.
+
 ## Portable and release verification
 
 The 1.0.0 release metadata is in RELEASE-INFO.json. Archive CRC, manifest and

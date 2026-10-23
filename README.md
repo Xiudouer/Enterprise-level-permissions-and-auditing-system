@@ -1,5 +1,7 @@
 # BackendSecurityKit 1.0.0
 
+[![tests](https://github.com/Xiudouer/Enterprise-level-permissions-and-auditing-system/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/Xiudouer/Enterprise-level-permissions-and-auditing-system/actions/workflows/tests.yml)
+
 从 Tencent/WeKnora 的安全设计中抽取思路并独立实现的通用后端安全组件。提供 **Python 库 + WSGI 中间件 + HTTPS/gRPC 示例服务**；不依赖 WeKnora、Go、Docker、数据库服务器或模型。
 
 本仓库包含 **完整 `securitykit` 源码、CLI、测试、示例和构建脚本**。Windows x64 便携 EXE、`_internal/` 运行时、依赖 wheels、证书、凭据和运行数据库不在此仓库，需按 `build-windows.ps1` 或单独发布的离线包获取。
