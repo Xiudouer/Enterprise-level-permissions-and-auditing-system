@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- GitHub Actions `tests` 工作流：Python 3.12 安装依赖并运行完整 unittest。
+- `SECURITY.md`：支持范围、私密漏洞报告渠道和安全边界。
+
 ## [1.0.0] - 2026-10-19
 
 ### Added

@@ -162,11 +162,14 @@ HMAC 链提供篡改证据，**不是不可篡改存储或数字签名**。没�
 | `UPSTREAM.md` / `THIRD-PARTY.md` | 上游对应关系与第三方声明 |
 | `TEST-RESULTS.md` / `RELEASE-INFO.json` | 验证记录与 1.0.0 发布元数据 |
 | `CONTRIBUTING.md` / `CHANGELOG.md` | 贡献流程与版本记录 |
+| `SECURITY.md` | 私密漏洞报告渠道与安全边界 |
 
 ## 部署与测试范围
 
 附带服务面向本机学习和联调，固定 loopback；HTTP 使用标准库参考服务器，最多同时处理 32 个连接，socket 超时 5 秒；gRPC 最多 32 个并发 RPC。它们不替代生产反向代理的限流、完整 HTTP 防护、容量治理或证书管理。
 
 通用内核以 SQLite 单机事务作为示例，没有集群权限缓存、跨进程即时吊销、外部 KMS/HSM、自动凭据轮换、登录防爆破、租户配额或审计保留策略。回调中的网络/邮件等外部副作用无法通过 SQLite 回滚，应使用事务 outbox。已验证范围见 [TEST-RESULTS.md](TEST-RESULTS.md)。
+
+安全问题请按 [SECURITY.md](SECURITY.md) 使用私密渠道报告，不要在公开 Issue 中粘贴凭据、私钥或真实数据。
 
 源码采用 MIT；上游和第三方许可证见 [LICENSE](LICENSE)、[THIRD-PARTY.md](THIRD-PARTY.md) 与 `licenses/`。本项目不是腾讯官方发行版。
